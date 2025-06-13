@@ -1,50 +1,64 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Munich Mensa API - MCP Server
 
-This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers. 
+A Model Context Protocol (MCP) server that provides access to Munich university cafeteria (Mensa) menus and facility information. This server is hosted on Cloudflare Workers and accessible remotely without authentication.
 
-## Get started: 
+🌐 **Live Server:** https://mensa-munich-mcp.averwald.io/sse
 
-[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-authless)
+## Overview
 
-This will deploy your MCP server to a URL like: `remote-mcp-server-authless.<your-account>.workers.dev/sse`
+This MCP server provides AI assistants and applications with access to real-time information about Munich's university dining facilities. It fetches data from the TUM Eat API to provide current menus, facility details, and operating hours.
 
-Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
-```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
+## Features
+
+- 🏢 **Facility Discovery**: Get information about all available Munich university dining facilities
+- 🍽️ **Menu Access**: Retrieve daily menus for specific facilities with pricing information
+- 🔍 **Smart Filtering**: Filter facilities by name or location
+- 📅 **Date Flexibility**: Get menus for specific dates or default to today
+- ⚡ **Real-time Data**: Fetches live data from the TUM Eat API
+- 🌍 **Remote Access**: Hosted on Cloudflare Workers for global accessibility
+
+## Available Tools
+
+### `get_mensa_facilities`
+
+Retrieves a list of all available mensa facilities with optional filtering.
+
+**Parameters:**
+- `filter` (optional): Filter facilities by name or location
+
+**Example Usage:**
+```
+Filter: "arcis" → Returns facilities with "arcis" in name or location
+Filter: "garching" → Returns facilities in Garching area
+No filter → Returns all facilities
 ```
 
-## Customizing your MCP Server
+**Response includes:**
+- Facility name and location
+- API name for menu queries
+- Coordinates (latitude/longitude)
+- Opening hours
+- Queue status (when available)
 
-To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`. 
+### `get_mensa_menu`
 
-## Connect to Cloudflare AI Playground
+Fetches the menu for a specific facility on a given date.
 
-You can connect to your MCP server from the Cloudflare AI Playground, which is a remote MCP client:
+**Parameters:**
+- `apiName`: The API identifier for the facility (e.g., "mensa-arcisstr")
+- `date` (optional): Date in YYYY-MM-DD format (defaults to today)
 
-1. Go to https://playground.ai.cloudflare.com/
-2. Enter your deployed MCP server URL (`remote-mcp-server-authless.<your-account>.workers.dev/sse`)
-3. You can now use your MCP tools directly from the playground!
+**Response includes:**
+- Menu items with names and categories
+- Pricing for students, staff, and guests
+- Dietary labels and allergen information
+- Facility context (name and location)
 
-## Connect Claude Desktop to your MCP server
+## API Reference
 
-You can also connect to your remote MCP server from local MCP clients, by using the [mcp-remote proxy](https://www.npmjs.com/package/mcp-remote). 
+The server interfaces with the [TUM Eat API](https://tum-dev.github.io/eat-api/), which provides:
+- Real-time facility information
+- Daily menu updates
+- Pricing for different user groups
+- Dietary and allergen labeling
 
-To connect to your MCP server from Claude Desktop, follow [Anthropic's Quickstart](https://modelcontextprotocol.io/quickstart/user) and within Claude Desktop go to Settings > Developer > Edit Config.
-
-Update with this configuration:
-
-```json
-{
-  "mcpServers": {
-    "calculator": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://localhost:8787/sse"  // or remote-mcp-server-authless.your-account.workers.dev/sse
-      ]
-    }
-  }
-}
-```
-
-Restart Claude and you should see the tools become available. 
